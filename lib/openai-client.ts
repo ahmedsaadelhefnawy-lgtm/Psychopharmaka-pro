@@ -5,11 +5,11 @@ export async function fetchDrugInfo(drugName: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Authorization': 'Bearer ' + OPENAI_API_KEY,
     },
     body: JSON.stringify({
       model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: `Erstelle eine kurze Medikamentenkarte für ${drugName} auf Deutsch. Antworte NUR als JSON: {"name":"${drugName}","klasse":"","indikationen":[],"mechanismus":"","dosierung":"","nebenwirkungen":[],"gefaehrlicheNebenwirkungen":[],"gewicht":"","sedierung":"","interaktionen":[],"monitoring":[],"schwangerschaft":"","geriatrie":"","klinischePearls":[],"quellen":["AI-generiert; Fachinformation prüfen"]}` }],
+      messages: [{ role: 'user', content: 'Erstelle eine kurze Medikamentenkarte fuer ' + drugName + ' auf Deutsch. Antworte NUR als JSON: {"name":"' + drugName + '","klasse":"","indikationen":[],"mechanismus":"","dosierung":"","nebenwirkungen":[],"gefaehrlicheNebenwirkungen":[],"gewicht":"","sedierung":"","interaktionen":[],"monitoring":[],"schwangerschaft":"","geriatrie":"","klinischePearls":[],"quellen":["AI-generiert"]}' }],
       temperature: 0.2
     })
   });
@@ -21,10 +21,14 @@ export async function fetchDrugInfo(drugName: string) {
 }
 
 export async function fetchInteractionCheck(medications: string, patientContext: string) {
-  const prompt = `Analysiere diese Arzneimittelinteraktionen auf Deutsch:\n\nMedikation:\n${medications}\n\nPatientenkontext:\n${patientContext || 'Nicht angegeben'}\n\nAntworte exakt mit diesen Überschriften:\nRisikostufe:\nHauptinteraktionen:\nMechanismus:\nKlinische Risiken:\nMonitoring:\nEmpfehlungen:\nRed Flags:\nHinweis:`;
+  const prompt = 'Analysiere diese Arzneimittelinteraktionen auf Deutsch.\n\nMedikation:\n' + medications + '\n\nPatientenkontext:\n' + (patientContext || 'Nicht angegeben') + '\n\nAntworte exakt mit diesen Abschnitten:\nRisikostufe:\nHauptinteraktionen:\nMechanismus:\nKlinische Risiken:\nMonitoring:\nEmpfehlungen:\nRed Flags:\nHinweis:';
+  
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + OPENAI_API_KEY,
+    },
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [
@@ -34,14 +38,24 @@ export async function fetchInteractionCheck(medications: string, patientContext:
       temperature: 0.2
     })
   });
+  
   const data = await r.json();
   if (!r.ok) throw new Error(data.error?.message || 'OpenAI Fehler');
   const text = data.choices?.[0]?.message?.content || '';
-  const getSection = (title: string) => {
-   const regex = new RegExp(title + ':([\\s\\S]*?)(?=Risikostufe:|Hauptinteraktionen:|Mechanismus:|Klinische Risiken:|Monitoring:|Empfehlungen:|Red Flags:|Hinweis:|$)', 'i');
-    const match = text.match(regex);
-    return match ? match[1].trim() : '';
-  };
+
+  function getSection(title: string) {
+    const idx = text.indexOf(title + ':');
+    if (idx === -1) return '';
+    const start = idx + title.length + 1;
+    const sections = ['Risikostufe:', 'Hauptinteraktionen:', 'Mechanismus:', 'Klinische Risiken:', 'Monitoring:', 'Empfehlungen:', 'Red Flags:', 'Hinweis:'];
+    let end = text.length;
+    for (const s of sections) {
+      const i = text.indexOf(s, start);
+      if (i !== -1 && i < end) end = i;
+    }
+    return text.slice(start, end).trim();
+  }
+
   return {
     summary: getSection('Hauptinteraktionen') || text,
     riskLevel: getSection('Risikostufe'),
@@ -51,6 +65,6 @@ export async function fetchInteractionCheck(medications: string, patientContext:
     recommendations: [getSection('Empfehlungen')].filter(Boolean),
     redFlags: [getSection('Red Flags')].filter(Boolean),
     saferAlternatives: [],
-    arztHinweis: getSection('Hinweis') || 'Fachinformation prüfen.'
+    arztHinweis: getSection('Hinweis') || 'Fachinformation pruefen.'
   };
 }
