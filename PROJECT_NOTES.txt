@@ -1,0 +1,95 @@
+PSYCHOPHARMAKA PRO — PROJECT NOTES
+
+Projekt:
+Deutschsprachige KI-App für Psychopharmakotherapie.
+
+Entwickler:
+Ahmed Elhefnawy
+
+TECH STACK:
+- Next.js 14
+- React
+- TypeScript
+- Tailwind CSS
+- OpenAI API
+
+HAUPTFUNKTIONEN:
+1. Medikamenten-Datenbank
+2. Interaktionscheck
+3. KI-Tools
+4. Lernmodus
+5. Erkrankungen & Empfehlungen
+
+OPENAI:
+- Nutzung über fetch()
+- Endpoint:
+https://api.openai.com/v1/chat/completions
+
+MODEL:
+gpt-4o-mini
+
+ENV:
+OPENAI_API_KEY in .env.local
+
+WICHTIGE API ROUTES:
+- app/api/drug-ai/route.ts
+- app/api/interaction-ai/route.ts
+
+INTERAKTIONSCHECK:
+- Strukturierte Antwort mit:
+  - Risikostufe
+  - Hauptinteraktionen
+  - Mechanismus
+  - Klinische Risiken
+  - Monitoring
+  - Empfehlungen
+  - Red Flags
+
+WICHTIGE FIXES:
+1. OpenAI package entfernt
+→ Nutzung über fetch statt SDK
+
+2. JSON/String Fehler behoben
+
+3. React Child Error behoben
+
+4. Interaktionsanalyse formatiert
+
+5. AI Summary Parsing verbessert
+
+DESIGN:
+- Dark UI
+- Violett/Blau Theme
+- Responsive Layout
+
+STATUS:
+Projekt funktionsfähig.
+
+NÄCHSTE IDEEN:
+- Export als PDF
+- Patientenberichte
+- Drug Interaction Severity Colors
+- Login System
+- DSGVO Features
+- Offline Datenbank
+- Fachinformationsintegration
+Psychopharmaka Pro v1 Ahmed
+
+- Next.js + TypeScript
+- OpenAI API integriert
+- AI Tools funktionieren über localhost:3000
+- Desktop-App via Tauri erstellt
+- iPhone-App via Capacitor erstellt
+- Für AI-Funktionen muss aktuell npm run dev laufen
+- Interaktionscheck repariert
+- Medikamenten-Datenbank funktioniert
+- API-Key in .env.local
+
+Wichtige Befehle:
+
+npm run dev
+npm run desktop:build
+npm run ios
+
+Projektpfad:
+~/Downloads/psychopharmaka-pro
